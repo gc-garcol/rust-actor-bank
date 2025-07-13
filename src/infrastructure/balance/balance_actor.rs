@@ -2,6 +2,7 @@ use actix::{Actor, Context, Handler, Message};
 
 use crate::application::balance::api::{
     balance_api::BalanceApi,
+    balance_query_api::{BalanceQuery, BalanceResponse},
     create_balance_api::{CreateBalanceCommand, CreateBalanceResponse},
     deposit_balance_api::{DepositBalanceCommand, DepositBalanceResponse},
     transfer_balance_api::{TransferBalanceCommand, TransferBalanceResponse},
@@ -18,6 +19,14 @@ impl Message for DepositBalanceCommand {
 
 impl Message for WithdrawBalanceCommand {
     type Result = WithdrawBalanceResponse;
+}
+
+impl Message for TransferBalanceCommand {
+    type Result = TransferBalanceResponse;
+}
+
+impl Message for BalanceQuery {
+    type Result = BalanceResponse;
 }
 
 impl Actor for BalanceApi {
@@ -56,14 +65,18 @@ impl Handler<WithdrawBalanceCommand> for BalanceApi {
     }
 }
 
-impl Message for TransferBalanceCommand {
-    type Result = TransferBalanceResponse;
-}
-
 impl Handler<TransferBalanceCommand> for BalanceApi {
     type Result = TransferBalanceResponse;
 
     fn handle(&mut self, msg: TransferBalanceCommand, _ctx: &mut Self::Context) -> Self::Result {
         self.transfer(msg)
+    }
+}
+
+impl Handler<BalanceQuery> for BalanceApi {
+    type Result = BalanceResponse;
+
+    fn handle(&mut self, msg: BalanceQuery, _ctx: &mut Self::Context) -> Self::Result {
+        self.get_balance(msg)
     }
 }

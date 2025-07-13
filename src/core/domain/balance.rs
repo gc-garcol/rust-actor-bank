@@ -3,6 +3,7 @@ use std::error::Error;
 use std::fmt;
 
 use bincode::{Decode, Encode};
+use serde::Serialize;
 
 use crate::core::common::types::Void;
 
@@ -91,12 +92,14 @@ impl Balances {
         Ok(())
     }
 
-    pub fn get_balance(&self, id: BalanceId) -> Option<&Balance> {
-        self.balances.get(&id)
+    pub fn get_balance(&self, id: BalanceId) -> Result<&Balance, BalanceError> {
+        self.balances
+            .get(&id)
+            .ok_or(BalanceError::BalanceNotFound(id))
     }
 }
 
-#[derive(Debug, Encode, Decode, Clone)]
+#[derive(Debug, Encode, Decode, Clone, Serialize)]
 pub struct Balance {
     pub id: BalanceId,
     pub amount: BalanceAmount,

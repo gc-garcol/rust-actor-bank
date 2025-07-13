@@ -3,6 +3,7 @@ use std::{cell::RefCell, collections::HashMap, rc::Rc, sync::Arc};
 use crate::{
     application::balance::{
         api::{
+            balance_query_api::{BalanceQuery, BalanceQueryApi, BalanceResponse},
             create_balance_api::{CreateBalanceApi, CreateBalanceCommand, CreateBalanceResponse},
             deposit_balance_api::{
                 DepositBalanceApi, DepositBalanceCommand, DepositBalanceResponse,
@@ -27,6 +28,7 @@ pub struct BalanceApi {
     deposit_balance_api: DepositBalanceApi,
     withdraw_balance_api: WithdrawBalanceApi,
     transfer_balance_api: TransferBalanceApi,
+    balance_query_api: BalanceQueryApi,
 }
 
 impl BalanceApi {
@@ -60,11 +62,16 @@ impl BalanceApi {
             balance_repository: balance_repository.clone(),
         };
 
+        let balance_query_api = BalanceQueryApi {
+            balances: balances.clone(),
+        };
+
         Self {
             create_balance_api,
             deposit_balance_api,
             withdraw_balance_api,
             transfer_balance_api,
+            balance_query_api,
         }
     }
 
@@ -98,5 +105,9 @@ impl BalanceApi {
 
     pub fn transfer(&mut self, command: TransferBalanceCommand) -> TransferBalanceResponse {
         self.transfer_balance_api.transfer(command)
+    }
+
+    pub fn get_balance(&mut self, query: BalanceQuery) -> BalanceResponse {
+        self.balance_query_api.get_balance(query)
     }
 }

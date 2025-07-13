@@ -1,18 +1,30 @@
 use actix_web::{
-    HttpResponse, Responder, post,
+    HttpResponse, Responder, get, post,
     web::{self, Json},
 };
 
 use crate::{
     application::balance::api::{
-        create_balance_api::CreateBalanceCommand, deposit_balance_api::DepositBalanceCommand,
-        transfer_balance_api::TransferBalanceCommand, withdraw_balance_api::WithdrawBalanceCommand,
+        balance_query_api::BalanceQuery, create_balance_api::CreateBalanceCommand,
+        deposit_balance_api::DepositBalanceCommand, transfer_balance_api::TransferBalanceCommand,
+        withdraw_balance_api::WithdrawBalanceCommand,
     },
     infrastructure::app_ioc::AppState,
     transport::rest::balance_payload::{
         CreateBalanceRequest, DepositBalanceRequest, TransferBalanceRequest, WithdrawBalanceRequest,
     },
 };
+
+#[get("/balance")]
+async fn get_balance(ioc: web::Data<AppState>, query: web::Query<BalanceQuery>) -> impl Responder {
+    let result = ioc.balance_api_addr.send(query.into_inner()).await.unwrap();
+    match result {
+        Ok(balance) => HttpResponse::Ok().json(balance),
+        Err(balance_error) => {
+            HttpResponse::BadRequest().body(format!("Error getting balance: {:?}", balance_error))
+        }
+    }
+}
 
 #[post("/balance")]
 async fn create_balance(
@@ -99,7 +111,8 @@ async fn transfer_balance(
 }
 
 pub fn config(cfg: &mut web::ServiceConfig) {
-    cfg.service(create_balance)
+    cfg.service(get_balance)
+        .service(create_balance)
         .service(deposit_balance)
         .service(withdraw_balance)
         .service(transfer_balance);
