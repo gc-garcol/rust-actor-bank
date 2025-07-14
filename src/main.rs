@@ -1,7 +1,5 @@
 use actix_web::middleware;
 use actix_web::{App, HttpServer, web};
-use env_logger::Env;
-use log::info;
 use core::common::types::Result;
 use core::common::types::Void;
 use infrastructure::app_ioc::AppState;
@@ -15,6 +13,8 @@ pub mod transport;
 
 #[actix_web::main]
 async fn main() -> Result<Void> {
+    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
+
     let app_state = AppState::new();
 
     let port = env::var("PORT")
@@ -22,8 +22,6 @@ async fn main() -> Result<Void> {
         .parse::<u16>()
         .unwrap_or(8080);
     let host = env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
-
-    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 
     HttpServer::new(move || {
         App::new()

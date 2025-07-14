@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use bincode::config;
+use log::info;
 use rust_rocksdb::{DBWithThreadMode, SingleThreaded};
 
 use crate::{
@@ -29,11 +30,11 @@ impl BalanceRepository for BalanceRepositoryRocksdb {
 
     fn persist_all(&self, balances: Vec<Balance>) {
         let mut batch = rust_rocksdb::WriteBatch::default();
+        let column_family: &rust_rocksdb::ColumnFamily = self.db.cf_handle(BALANCES_CF).unwrap();
         for balance in balances {
             let balance_bytes = bincode::encode_to_vec(&balance, config::standard()).unwrap();
             let id_bytes = balance.id.to_be_bytes();
-            let cf: &rust_rocksdb::ColumnFamily = self.db.cf_handle(BALANCES_CF).unwrap();
-            batch.put_cf(cf, id_bytes, balance_bytes);
+            batch.put_cf(column_family, id_bytes, balance_bytes);
         }
         self.db.write(batch).unwrap();
     }
@@ -62,7 +63,7 @@ impl BalanceRepository for BalanceRepositoryRocksdb {
             balances.push(balance);
         }
 
-        println!("load all balances: {:?}", balances.len());
+        info!("load all balances: {:?}", balances.len());
         balances
     }
 }

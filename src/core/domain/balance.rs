@@ -135,33 +135,3 @@ impl Balance {
         Ok(())
     }
 }
-
-pub trait BalanceEvent {}
-
-pub struct BalanceCreatedEvent {
-    pub id: BalanceId,
-}
-
-impl BalanceEvent for BalanceCreatedEvent {}
-
-pub struct BalanceDepositedEvent {
-    pub id: BalanceId,
-    pub amount: BalanceAmount,
-}
-
-impl BalanceEvent for BalanceDepositedEvent {}
-
-pub struct BalanceWithdrawnEvent {
-    pub id: BalanceId,
-    pub amount: BalanceAmount,
-}
-
-impl BalanceEvent for BalanceWithdrawnEvent {}
-
-pub struct BalanceTransferredEvent {
-    pub from_id: BalanceId,
-    pub to_id: BalanceId,
-    pub amount: BalanceAmount,
-}
-
-impl BalanceEvent for BalanceTransferredEvent {}

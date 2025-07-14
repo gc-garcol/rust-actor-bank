@@ -6,8 +6,9 @@ use crate::{
     },
     core::{
         common::types::Void,
-        domain::balance::{
-            BalanceAmount, BalanceError, BalanceId, BalanceTransferredEvent, Balances,
+        domain::{
+            balance::{BalanceAmount, BalanceError, BalanceId, Balances},
+            balance_event::{BalanceEventType, BalanceTransferredEvent},
         },
     },
 };
@@ -49,12 +50,15 @@ impl TransferBalanceApi {
                 let to_balance = balances_guard.get_balance(command.to_id).unwrap();
                 self.balance_repository
                     .persist_all(vec![from_balance.clone(), to_balance.clone()]);
-                self.balance_event_repository
-                    .save(Box::new(BalanceTransferredEvent {
+                self.balance_event_repository.save(
+                    BalanceEventType::BalanceTransferred,
+                    BalanceTransferredEvent {
                         from_id: command.from_id,
                         to_id: command.to_id,
                         amount: command.amount,
-                    }));
+                    }
+                    .bytes(),
+                );
                 Ok(())
             }
             Err(balance_error) => Err(balance_error),

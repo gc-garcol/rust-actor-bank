@@ -6,8 +6,9 @@ use crate::{
     },
     core::{
         common::types::Void,
-        domain::balance::{
-            BalanceAmount, BalanceDepositedEvent, BalanceError, BalanceId, Balances,
+        domain::{
+            balance::{BalanceAmount, BalanceError, BalanceId, Balances},
+            balance_event::{BalanceDepositedEvent, BalanceEventType},
         },
     },
 };
@@ -42,11 +43,14 @@ impl DepositBalanceApi {
                 let balances_guard = self.balances.borrow_mut();
                 let balance = balances_guard.get_balance(command.id).unwrap();
                 self.balance_repository.persist(balance.clone());
-                self.balance_event_repository
-                    .save(Box::new(BalanceDepositedEvent {
+                self.balance_event_repository.save(
+                    BalanceEventType::BalanceDeposited,
+                    BalanceDepositedEvent {
                         id: command.id,
                         amount: command.amount,
-                    }));
+                    }
+                    .bytes(),
+                );
                 Ok(())
             }
             Err(balance_error) => Err(balance_error),

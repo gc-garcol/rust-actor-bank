@@ -6,7 +6,10 @@ use crate::{
     },
     core::{
         common::types::Void,
-        domain::balance::{Balance, BalanceCreatedEvent, BalanceError, BalanceId, Balances},
+        domain::{
+            balance::{Balance, BalanceError, BalanceId, Balances},
+            balance_event::{BalanceCreatedEvent, BalanceEventType},
+        },
     },
 };
 
@@ -38,8 +41,10 @@ impl CreateBalanceApi {
                     id: command.id,
                     amount: 0,
                 });
-                self.balance_event_repository
-                    .save(Box::new(BalanceCreatedEvent { id: command.id }));
+                self.balance_event_repository.save(
+                    BalanceEventType::BalanceCreated,
+                    BalanceCreatedEvent { id: command.id }.bytes(),
+                );
                 Ok(command.id)
             }
             Err(balance_error) => Err(balance_error),

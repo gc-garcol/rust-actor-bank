@@ -6,8 +6,9 @@ use crate::{
     },
     core::{
         common::types::Void,
-        domain::balance::{
-            BalanceAmount, BalanceError, BalanceId, BalanceWithdrawnEvent, Balances,
+        domain::{
+            balance::{BalanceAmount, BalanceError, BalanceId, Balances},
+            balance_event::{BalanceEventType, BalanceWithdrawnEvent},
         },
     },
 };
@@ -42,11 +43,14 @@ impl WithdrawBalanceApi {
                 let balances_guard = self.balances.borrow_mut();
                 let balance = balances_guard.get_balance(command.id).unwrap();
                 self.balance_repository.persist(balance.clone());
-                self.balance_event_repository
-                    .save(Box::new(BalanceWithdrawnEvent {
+                self.balance_event_repository.save(
+                    BalanceEventType::BalanceWithdrawn,
+                    BalanceWithdrawnEvent {
                         id: command.id,
                         amount: command.amount,
-                    }));
+                    }
+                    .bytes(),
+                );
                 Ok(())
             }
             Err(balance_error) => Err(balance_error),

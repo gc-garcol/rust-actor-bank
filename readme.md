@@ -59,6 +59,9 @@ cargo clippy
 # Build the project
 cargo build
 
+# Run the project in development mode with auto reload
+watchexec -w src -r cargo run
+
 # Run the project in development mode
 cargo run
 
