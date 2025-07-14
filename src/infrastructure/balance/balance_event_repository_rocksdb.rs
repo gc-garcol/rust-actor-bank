@@ -1,13 +1,19 @@
+use std::sync::Arc;
+
+use rust_rocksdb::{DBWithThreadMode, SingleThreaded};
+
 use crate::{
     application::balance::spi::balance_event_repository::BalanceEventRepository,
     core::domain::balance::BalanceEvent,
 };
 
-pub struct BalanceEventRepositoryRocksdb {}
+pub struct BalanceEventRepositoryRocksdb {
+    db: Arc<DBWithThreadMode<SingleThreaded>>,
+}
 
-impl Default for BalanceEventRepositoryRocksdb {
-    fn default() -> Self {
-        Self {}
+impl BalanceEventRepositoryRocksdb {
+    pub fn new(db: Arc<DBWithThreadMode<SingleThreaded>>) -> Self {
+        Self { db }
     }
 }
 

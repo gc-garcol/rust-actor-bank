@@ -1,27 +1,19 @@
+use std::sync::Arc;
+
 use bincode::config;
-use rust_rocksdb::{DBWithThreadMode, Options, SingleThreaded, DB};
+use rust_rocksdb::{DBWithThreadMode, SingleThreaded};
 
 use crate::{
     application::balance::spi::balance_repository::BalanceRepository,
-    core::domain::balance::{Balance, BalanceId},
+    core::domain::balance::{Balance, BalanceId}, infrastructure::balance::balance_config::BALANCES_CF,
 };
 
-const BALANCES_CF: &str = "balances";
-const EVENTS_CF: &str = "events";
-
 pub struct BalanceRepositoryRocksdb {
-    db: DBWithThreadMode<SingleThreaded>,
+    db: Arc<DBWithThreadMode<SingleThreaded>>,
 }
 
-impl Default for BalanceRepositoryRocksdb {
-    fn default() -> Self {
-        let path: &'static str = "offheap/balance.db";
-        
-        let mut opts = Options::default();
-        opts.create_if_missing(true);
-        opts.create_missing_column_families(true);
-        
-        let db = DB::open_cf(&opts, path, [BALANCES_CF, EVENTS_CF]).unwrap();
+impl BalanceRepositoryRocksdb {
+    pub fn new(db: Arc<DBWithThreadMode<SingleThreaded>>) -> Self {
         Self { db }
     }
 }
