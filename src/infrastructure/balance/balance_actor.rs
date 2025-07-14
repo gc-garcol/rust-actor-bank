@@ -1,4 +1,5 @@
 use actix::{Actor, Context, Handler, Message};
+use log::info;
 
 use crate::application::balance::api::{
     balance_api::BalanceApi,
@@ -37,7 +38,7 @@ impl Actor for BalanceApi {
     }
 
     fn stopped(&mut self, _ctx: &mut Self::Context) {
-        println!("BalanceApi stopped");
+        info!("BalanceApi stopped");
     }
 }
 

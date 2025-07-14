@@ -1,5 +1,7 @@
 use actix_web::middleware;
 use actix_web::{App, HttpServer, web};
+use env_logger::Env;
+use log::info;
 use core::common::types::Result;
 use core::common::types::Void;
 use infrastructure::app_ioc::AppState;
@@ -21,7 +23,7 @@ async fn main() -> Result<Void> {
         .unwrap_or(8080);
     let host = env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
 
-    println!("🚀 Starting server on {}:{}", host, port);
+    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 
     HttpServer::new(move || {
         App::new()

@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use log::info;
 use rust_rocksdb::{DBWithThreadMode, SingleThreaded};
 
 use crate::{
@@ -19,6 +20,6 @@ impl BalanceEventRepositoryRocksdb {
 
 impl BalanceEventRepository for BalanceEventRepositoryRocksdb {
     fn save(&self, _event: Box<dyn BalanceEvent>) {
-        // println!("save balance event");
+        info!("save balance event");
     }
 }
