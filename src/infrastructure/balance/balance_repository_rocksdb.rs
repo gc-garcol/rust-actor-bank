@@ -5,7 +5,8 @@ use rust_rocksdb::{DBWithThreadMode, SingleThreaded};
 
 use crate::{
     application::balance::spi::balance_repository::BalanceRepository,
-    core::domain::balance::{Balance, BalanceId}, infrastructure::balance::balance_config::BALANCES_CF,
+    core::domain::balance::{Balance, BalanceId},
+    infrastructure::balance::balance_config::BALANCES_CF,
 };
 
 pub struct BalanceRepositoryRocksdb {
