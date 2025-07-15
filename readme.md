@@ -37,7 +37,7 @@ src/
 │   ├── common/           # Shared types and utilities
 │   └── domain/           # Domain models and business logic
 ├── infrastructure/       # Infrastructure layer
-│   ├── balance/          # Actor + Repository implementations
+│   ├── balance/          # Actor + Repository implementations + Transaction Manager
 │   └── app_ioc.rs        # Dependency injection
 └── transport/            # Transport layer
     └── rest/             # REST
