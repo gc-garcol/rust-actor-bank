@@ -4,8 +4,9 @@ use core::common::types::Result;
 use core::common::types::Void;
 use dotenv::dotenv;
 use infrastructure::app_ioc::AppState;
-use std::env;
 use transport::rest::balance_resource;
+
+use crate::infrastructure::server_config::{ServerConfig, initialize_logging};
 
 pub mod application;
 pub mod core;
@@ -14,20 +15,11 @@ pub mod transport;
 
 #[actix_web::main]
 async fn main() -> Result<Void> {
-    log4rs::init_file(
-        env::var("LOG4RS_CONFIG_PATH").unwrap_or("log4rs.yaml".to_string()),
-        Default::default(),
-    )
-    .unwrap();
     dotenv().ok();
+    let config = ServerConfig::from_env();
+    initialize_logging(&config.log_config_path)?;
 
     let app_state = AppState::new();
-
-    let port = env::var("PORT")
-        .unwrap_or_else(|_| "8080".to_string())
-        .parse::<u16>()
-        .unwrap_or(8080);
-    let host = env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
 
     HttpServer::new(move || {
         App::new()
@@ -35,7 +27,9 @@ async fn main() -> Result<Void> {
             .configure(balance_resource::config)
             .wrap(middleware::Compress::default())
     })
-    .bind((host, port))?
+    .bind((config.host, config.port))?
     .run()
-    .await
+    .await?;
+
+    Ok(())
 }
