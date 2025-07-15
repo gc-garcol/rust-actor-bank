@@ -6,6 +6,7 @@ services:
       - "8080:8080"
     volumes:
       - ./offheap:/app/offheap
+      - ./log4rs.yaml:/app/log4rs.yaml
     build:
       context: .
       dockerfile: Dockerfile

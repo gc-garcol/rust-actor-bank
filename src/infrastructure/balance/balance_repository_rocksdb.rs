@@ -25,13 +25,6 @@ impl BalanceRepositoryRocksdb {
 }
 
 impl BalanceRepository for BalanceRepositoryRocksdb {
-    fn persist(&self, balance: Balance) {
-        let balance_bytes = bincode::encode_to_vec(&balance, config::standard()).unwrap();
-        let id_bytes = balance.id.to_be_bytes();
-        let cf: &rust_rocksdb::ColumnFamily = self.db.cf_handle(BALANCES_CF).unwrap();
-        self.db.put_cf(cf, id_bytes, balance_bytes).unwrap();
-    }
-
     fn persist_in_transaction(
         &self,
         balance: Balance,
@@ -43,18 +36,6 @@ impl BalanceRepository for BalanceRepositoryRocksdb {
         let mut batch = txn_context.batch.borrow_mut();
         let cf: &rust_rocksdb::ColumnFamily = self.db.cf_handle(BALANCES_CF).unwrap();
         batch.put_cf(cf, id_bytes, balance_bytes);
-    }
-
-    fn persist_all(&self, balances: Vec<Balance>) {
-        let mut batch: rust_rocksdb::WriteBatchWithTransaction<false> =
-            rust_rocksdb::WriteBatch::default();
-        let column_family: &rust_rocksdb::ColumnFamily = self.db.cf_handle(BALANCES_CF).unwrap();
-        for balance in balances {
-            let balance_bytes = bincode::encode_to_vec(&balance, config::standard()).unwrap();
-            let id_bytes = balance.id.to_be_bytes();
-            batch.put_cf(column_family, id_bytes, balance_bytes);
-        }
-        self.db.write(batch).unwrap();
     }
 
     fn get(&self, id: BalanceId) -> Option<Balance> {
