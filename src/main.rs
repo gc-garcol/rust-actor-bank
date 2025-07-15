@@ -2,6 +2,7 @@ use actix_web::middleware;
 use actix_web::{App, HttpServer, web};
 use core::common::types::Result;
 use core::common::types::Void;
+use dotenv::dotenv;
 use infrastructure::app_ioc::AppState;
 use std::env;
 use transport::rest::balance_resource;
@@ -13,7 +14,12 @@ pub mod transport;
 
 #[actix_web::main]
 async fn main() -> Result<Void> {
-    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
+    log4rs::init_file(
+        env::var("LOG4RS_CONFIG_PATH").unwrap_or("log4rs.yaml".to_string()),
+        Default::default(),
+    )
+    .unwrap();
+    dotenv().ok();
 
     let app_state = AppState::new();
 
