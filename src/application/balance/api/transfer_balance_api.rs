@@ -1,13 +1,17 @@
 use std::{cell::RefCell, rc::Rc, sync::Arc};
 
 use crate::{
-    application::balance::spi::{
-        balance_event_repository::BalanceEventRepository, balance_repository::BalanceRepository,
+    application::{
+        balance::spi::{
+            balance_event_repository::BalanceEventRepository, balance_repository::BalanceRepository,
+        },
+        transaction_spi::{Transaction, TransactionContext},
     },
     core::{
         common::types::Void,
         domain::{
-            balance::{BalanceAmount, BalanceError, BalanceId, Balances},
+            balance::{BalanceAmount, BalanceId, Balances},
+            balance_error::BalanceError,
             balance_event::{BalanceEventType, BalanceTransferredEvent},
         },
     },
@@ -33,6 +37,7 @@ impl TransferBalanceCommand {
 #[derive(Clone)]
 pub struct TransferBalanceApi {
     pub balances: Rc<RefCell<Balances>>,
+    pub transaction: Arc<dyn Transaction>,
     pub balance_repository: Arc<dyn BalanceRepository>,
     pub balance_event_repository: Arc<dyn BalanceEventRepository>,
 }
@@ -44,24 +49,34 @@ impl TransferBalanceApi {
                 .borrow_mut()
                 .transfer(command.from_id, command.to_id, command.amount);
         match result {
-            Ok(()) => {
-                let balances_guard = self.balances.borrow_mut();
-                let from_balance = balances_guard.get_balance(command.from_id).unwrap();
-                let to_balance = balances_guard.get_balance(command.to_id).unwrap();
-                self.balance_repository
-                    .persist_all(vec![from_balance.clone(), to_balance.clone()]);
-                self.balance_event_repository.save(
-                    BalanceEventType::BalanceTransferred,
-                    BalanceTransferredEvent {
-                        from_id: command.from_id,
-                        to_id: command.to_id,
-                        amount: command.amount,
-                    }
-                    .bytes(),
-                );
-                Ok(())
-            }
+            Ok(()) => self.transfer_in_transaction(command),
             Err(balance_error) => Err(balance_error),
         }
+    }
+
+    fn transfer_in_transaction(
+        &mut self,
+        command: TransferBalanceCommand,
+    ) -> TransferBalanceResponse {
+        let transaction_context: Rc<dyn TransactionContext> = self.transaction.start();
+        let balances_guard = self.balances.borrow_mut();
+        let from_balance = balances_guard.get_balance(command.from_id).unwrap();
+        let to_balance = balances_guard.get_balance(command.to_id).unwrap();
+        self.balance_repository
+            .persist_in_transaction(from_balance.clone(), transaction_context.clone());
+        self.balance_repository
+            .persist_in_transaction(to_balance.clone(), transaction_context.clone());
+        self.balance_event_repository.persist_in_transaction(
+            BalanceEventType::BalanceTransferred,
+            BalanceTransferredEvent {
+                from_id: command.from_id,
+                to_id: command.to_id,
+                amount: command.amount,
+            }
+            .bytes(),
+            transaction_context.clone(),
+        );
+        transaction_context.commit();
+        Ok(())
     }
 }

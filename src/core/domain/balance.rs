@@ -1,44 +1,12 @@
 use std::collections::HashMap;
-use std::error::Error;
-use std::fmt;
 
 use bincode::{Decode, Encode};
 use serde::Serialize;
 
-use crate::core::common::types::Void;
+use crate::core::{common::types::Void, domain::balance_error::BalanceError};
 
 pub type BalanceId = u64;
 pub type BalanceAmount = u128;
-
-#[derive(Debug)]
-pub enum BalanceError {
-    BalanceAlreadyExists(BalanceId),
-    BalanceNotFound(BalanceId),
-    InsufficientFunds {
-        balance: BalanceAmount,
-        amount: BalanceAmount,
-    },
-}
-
-impl fmt::Display for BalanceError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            BalanceError::BalanceAlreadyExists(id) => {
-                write!(f, "Balance with id {} already exists", id)
-            }
-            BalanceError::BalanceNotFound(id) => write!(f, "Balance with id {} not found", id),
-            BalanceError::InsufficientFunds { balance, amount } => {
-                write!(
-                    f,
-                    "Insufficient funds for withdrawal. Balance: {}, Requested: {}",
-                    balance, amount
-                )
-            }
-        }
-    }
-}
-
-impl Error for BalanceError {}
 
 #[derive(Default, Clone)]
 pub struct Balances {

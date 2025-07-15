@@ -1,13 +1,17 @@
-use std::sync::Arc;
+use std::{rc::Rc, sync::Arc};
 
 use bincode::config;
 use log::info;
 use rust_rocksdb::{DBWithThreadMode, SingleThreaded};
 
 use crate::{
-    application::balance::spi::balance_repository::BalanceRepository,
+    application::{
+        balance::spi::balance_repository::BalanceRepository, transaction_spi::TransactionContext,
+    },
     core::domain::balance::{Balance, BalanceId},
-    infrastructure::balance::balance_config::BALANCES_CF,
+    infrastructure::{
+        balance::balance_config::BALANCES_CF, rocksdb_transaction::RocksdbTransactionContext,
+    },
 };
 
 pub struct BalanceRepositoryRocksdb {
@@ -28,8 +32,22 @@ impl BalanceRepository for BalanceRepositoryRocksdb {
         self.db.put_cf(cf, id_bytes, balance_bytes).unwrap();
     }
 
+    fn persist_in_transaction(
+        &self,
+        balance: Balance,
+        transaction_context: Rc<dyn TransactionContext>,
+    ) {
+        let balance_bytes = bincode::encode_to_vec(&balance, config::standard()).unwrap();
+        let id_bytes = balance.id.to_be_bytes();
+        let txn_context = Rc::downcast::<RocksdbTransactionContext>(transaction_context).unwrap();
+        let mut batch = txn_context.batch.borrow_mut();
+        let cf: &rust_rocksdb::ColumnFamily = self.db.cf_handle(BALANCES_CF).unwrap();
+        batch.put_cf(cf, id_bytes, balance_bytes);
+    }
+
     fn persist_all(&self, balances: Vec<Balance>) {
-        let mut batch = rust_rocksdb::WriteBatch::default();
+        let mut batch: rust_rocksdb::WriteBatchWithTransaction<false> =
+            rust_rocksdb::WriteBatch::default();
         let column_family: &rust_rocksdb::ColumnFamily = self.db.cf_handle(BALANCES_CF).unwrap();
         for balance in balances {
             let balance_bytes = bincode::encode_to_vec(&balance, config::standard()).unwrap();

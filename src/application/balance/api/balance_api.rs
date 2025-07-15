@@ -1,23 +1,29 @@
 use std::{cell::RefCell, collections::HashMap, rc::Rc, sync::Arc};
 
 use crate::{
-    application::balance::{
-        api::{
-            balance_query_api::{BalanceQuery, BalanceQueryApi, BalanceResponse},
-            create_balance_api::{CreateBalanceApi, CreateBalanceCommand, CreateBalanceResponse},
-            deposit_balance_api::{
-                DepositBalanceApi, DepositBalanceCommand, DepositBalanceResponse,
+    application::{
+        balance::{
+            api::{
+                balance_query_api::{BalanceQuery, BalanceQueryApi, BalanceResponse},
+                create_balance_api::{
+                    CreateBalanceApi, CreateBalanceCommand, CreateBalanceResponse,
+                },
+                deposit_balance_api::{
+                    DepositBalanceApi, DepositBalanceCommand, DepositBalanceResponse,
+                },
+                transfer_balance_api::{
+                    TransferBalanceApi, TransferBalanceCommand, TransferBalanceResponse,
+                },
+                withdraw_balance_api::{
+                    WithdrawBalanceApi, WithdrawBalanceCommand, WithdrawBalanceResponse,
+                },
             },
-            transfer_balance_api::{
-                TransferBalanceApi, TransferBalanceCommand, TransferBalanceResponse,
-            },
-            withdraw_balance_api::{
-                WithdrawBalanceApi, WithdrawBalanceCommand, WithdrawBalanceResponse,
+            spi::{
+                balance_event_repository::BalanceEventRepository,
+                balance_repository::BalanceRepository,
             },
         },
-        spi::{
-            balance_event_repository::BalanceEventRepository, balance_repository::BalanceRepository,
-        },
+        transaction_spi::Transaction,
     },
     core::domain::balance::{Balance, Balances},
 };
@@ -33,6 +39,7 @@ pub struct BalanceApi {
 
 impl BalanceApi {
     pub fn new(
+        transaction: Arc<dyn Transaction>,
         balance_event_repository: Arc<dyn BalanceEventRepository>,
         balance_repository: Arc<dyn BalanceRepository>,
     ) -> Self {
@@ -40,24 +47,28 @@ impl BalanceApi {
 
         let create_balance_api = CreateBalanceApi {
             balances: balances.clone(),
+            transaction: transaction.clone(),
             balance_event_repository: balance_event_repository.clone(),
             balance_repository: balance_repository.clone(),
         };
 
         let deposit_balance_api = DepositBalanceApi {
             balances: balances.clone(),
+            transaction: transaction.clone(),
             balance_event_repository: balance_event_repository.clone(),
             balance_repository: balance_repository.clone(),
         };
 
         let withdraw_balance_api = WithdrawBalanceApi {
             balances: balances.clone(),
+            transaction: transaction.clone(),
             balance_event_repository: balance_event_repository.clone(),
             balance_repository: balance_repository.clone(),
         };
 
         let transfer_balance_api = TransferBalanceApi {
             balances: balances.clone(),
+            transaction: transaction.clone(),
             balance_event_repository: balance_event_repository.clone(),
             balance_repository: balance_repository.clone(),
         };

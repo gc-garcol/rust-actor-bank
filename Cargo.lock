@@ -231,6 +231,7 @@ dependencies = [
  "log",
  "log4rs",
  "rust-rocksdb",
+ "scopeguard",
  "serde",
  "serde_json",
 ]

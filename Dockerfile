@@ -49,6 +49,7 @@ WORKDIR /app
 
 # Copy binary from builder stage
 COPY --from=builder /app/target/release/actor-bank /app/actor-bank
+COPY log4rs.yaml ./log4rs.yaml
 
 # Copy any additional files (config, static files, etc.)
 # COPY --from=builder /app/config ./config

@@ -1,13 +1,18 @@
+use std::panic::{self, AssertUnwindSafe};
+
 use actix::{Actor, Context, Handler, Message};
 use log::info;
 
-use crate::application::balance::api::{
-    balance_api::BalanceApi,
-    balance_query_api::{BalanceQuery, BalanceResponse},
-    create_balance_api::{CreateBalanceCommand, CreateBalanceResponse},
-    deposit_balance_api::{DepositBalanceCommand, DepositBalanceResponse},
-    transfer_balance_api::{TransferBalanceCommand, TransferBalanceResponse},
-    withdraw_balance_api::{WithdrawBalanceCommand, WithdrawBalanceResponse},
+use crate::{
+    application::balance::api::{
+        balance_api::BalanceApi,
+        balance_query_api::{BalanceQuery, BalanceResponse},
+        create_balance_api::{CreateBalanceCommand, CreateBalanceResponse},
+        deposit_balance_api::{DepositBalanceCommand, DepositBalanceResponse},
+        transfer_balance_api::{TransferBalanceCommand, TransferBalanceResponse},
+        withdraw_balance_api::{WithdrawBalanceCommand, WithdrawBalanceResponse},
+    },
+    core::domain::balance_error::BalanceError,
 };
 
 impl Message for CreateBalanceCommand {
@@ -46,7 +51,16 @@ impl Handler<CreateBalanceCommand> for BalanceApi {
     type Result = CreateBalanceResponse;
 
     fn handle(&mut self, msg: CreateBalanceCommand, _ctx: &mut Self::Context) -> Self::Result {
-        self.create_balance(msg)
+        let result = panic::catch_unwind(AssertUnwindSafe(|| self.create_balance(msg)));
+        match result {
+            Ok(result) => result,
+            Err(_) => {
+                // TODO: refactor later
+                Err(BalanceError::UnknownError(
+                    "create balance error".to_string(),
+                ))
+            }
+        }
     }
 }
 
