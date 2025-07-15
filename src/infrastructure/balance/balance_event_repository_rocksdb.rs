@@ -46,8 +46,6 @@ impl BalanceEventRepository for BalanceEventRepositoryRocksdb {
             data: event_byte,
         };
 
-        info!("Saving event in transaction: {:?}", balance_event);
-
         let txn_context = Rc::downcast::<RocksdbTransactionContext>(transaction_context).unwrap();
         let mut batch = txn_context.batch.borrow_mut();
         let event_bytes = bincode::encode_to_vec(&balance_event, config::standard()).unwrap();
@@ -55,6 +53,9 @@ impl BalanceEventRepository for BalanceEventRepositoryRocksdb {
         let cf: &rust_rocksdb::ColumnFamily = self.db.cf_handle(EVENTS_CF).unwrap();
         batch.put_cf(cf, id_bytes, event_bytes);
         batch.put_cf(cf, LAST_EVENT_ID, event_id.to_be_bytes());
+
+        info!("Saving event in transaction: {:?}", balance_event);
+
         event_id
     }
 }
