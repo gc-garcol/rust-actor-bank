@@ -1,44 +1,12 @@
 use std::collections::HashMap;
-use std::error::Error;
-use std::fmt;
 
 use bincode::{Decode, Encode};
 use serde::Serialize;
 
-use crate::core::common::types::Void;
+use crate::core::{common::types::Void, domain::balance_error::BalanceError};
 
 pub type BalanceId = u64;
 pub type BalanceAmount = u128;
-
-#[derive(Debug)]
-pub enum BalanceError {
-    BalanceAlreadyExists(BalanceId),
-    BalanceNotFound(BalanceId),
-    InsufficientFunds {
-        balance: BalanceAmount,
-        amount: BalanceAmount,
-    },
-}
-
-impl fmt::Display for BalanceError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            BalanceError::BalanceAlreadyExists(id) => {
-                write!(f, "Balance with id {} already exists", id)
-            }
-            BalanceError::BalanceNotFound(id) => write!(f, "Balance with id {} not found", id),
-            BalanceError::InsufficientFunds { balance, amount } => {
-                write!(
-                    f,
-                    "Insufficient funds for withdrawal. Balance: {}, Requested: {}",
-                    balance, amount
-                )
-            }
-        }
-    }
-}
-
-impl Error for BalanceError {}
 
 #[derive(Default, Clone)]
 pub struct Balances {
@@ -135,33 +103,3 @@ impl Balance {
         Ok(())
     }
 }
-
-pub trait BalanceEvent {}
-
-pub struct BalanceCreatedEvent {
-    pub id: BalanceId,
-}
-
-impl BalanceEvent for BalanceCreatedEvent {}
-
-pub struct BalanceDepositedEvent {
-    pub id: BalanceId,
-    pub amount: BalanceAmount,
-}
-
-impl BalanceEvent for BalanceDepositedEvent {}
-
-pub struct BalanceWithdrawnEvent {
-    pub id: BalanceId,
-    pub amount: BalanceAmount,
-}
-
-impl BalanceEvent for BalanceWithdrawnEvent {}
-
-pub struct BalanceTransferredEvent {
-    pub from_id: BalanceId,
-    pub to_id: BalanceId,
-    pub amount: BalanceAmount,
-}
-
-impl BalanceEvent for BalanceTransferredEvent {}

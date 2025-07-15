@@ -2,6 +2,10 @@
 
 A high-performance bank account management system built with Rust, leveraging the Actor model for concurrent transaction processing and RocksDB for durable storage.
 
+## Prerequisite
+
+- `rustc 1.88.0` or later
+
 ## Actor Model
 
 ```mermaid
@@ -58,6 +62,9 @@ cargo clippy
 
 # Build the project
 cargo build
+
+# Run the project in development mode with auto reload
+watchexec -w src -r cargo run
 
 # Run the project in development mode
 cargo run

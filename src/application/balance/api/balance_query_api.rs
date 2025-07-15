@@ -2,7 +2,10 @@ use std::{cell::RefCell, rc::Rc};
 
 use serde::Deserialize;
 
-use crate::core::domain::balance::{Balance, BalanceError, BalanceId, Balances};
+use crate::core::domain::{
+    balance::{Balance, BalanceId, Balances},
+    balance_error::BalanceError,
+};
 
 #[derive(Deserialize)]
 pub struct BalanceQuery {

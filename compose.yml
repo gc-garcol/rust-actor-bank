@@ -1,0 +1,11 @@
+services:
+  app:
+    image: actor-bank
+    container_name: actor-bank
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./offheap:/app/offheap
+    build:
+      context: .
+      dockerfile: Dockerfile

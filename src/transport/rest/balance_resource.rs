@@ -10,8 +10,13 @@ use crate::{
         withdraw_balance_api::WithdrawBalanceCommand,
     },
     infrastructure::app_ioc::AppState,
-    transport::rest::balance_payload::{
-        CreateBalanceRequest, DepositBalanceRequest, TransferBalanceRequest, WithdrawBalanceRequest,
+    transport::{
+        error_response::ErrorResponse,
+        rest::balance_payload::{
+            CreateBalanceRequest, DepositBalanceRequest, TransferBalanceRequest,
+            WithdrawBalanceRequest,
+        },
+        success_response::SuccessResponse,
     },
 };
 
@@ -21,7 +26,7 @@ async fn get_balance(ioc: web::Data<AppState>, query: web::Query<BalanceQuery>) 
     match result {
         Ok(balance) => HttpResponse::Ok().json(balance),
         Err(balance_error) => {
-            HttpResponse::BadRequest().body(format!("Error getting balance: {:?}", balance_error))
+            HttpResponse::BadRequest().body(format!("Error getting balance: {}", balance_error))
         }
     }
 }
@@ -37,12 +42,14 @@ async fn create_balance(
         .await
         .unwrap();
     match result {
-        Ok(balance_id) => {
-            HttpResponse::Ok().body(format!("Balance created with id: {:?}", balance_id))
-        }
-        Err(balance_error) => {
-            HttpResponse::BadRequest().body(format!("Error creating balance: {:?}", balance_error))
-        }
+        Ok(balance_id) => HttpResponse::Ok().json(SuccessResponse {
+            code: 200,
+            data: format!("Balance created with id: {:?}", balance_id),
+        }),
+        Err(balance_error) => HttpResponse::BadRequest().json(ErrorResponse {
+            code: 400,
+            message: balance_error.to_string(),
+        }),
     }
 }
 
@@ -57,12 +64,17 @@ async fn deposit_balance(
         .await
         .unwrap();
     match result {
-        Ok(_) => HttpResponse::Ok().body(format!(
-            "Balance deposited with id: {:?}, amount: {:?}",
-            request.id, request.amount
-        )),
-        Err(balance_error) => HttpResponse::BadRequest()
-            .body(format!("Error depositing balance: {:?}", balance_error)),
+        Ok(_) => HttpResponse::Ok().json(SuccessResponse {
+            code: 200,
+            data: format!(
+                "Balance deposited with id: {:?}, amount: {:?}",
+                request.id, request.amount
+            ),
+        }),
+        Err(balance_error) => HttpResponse::BadRequest().json(ErrorResponse {
+            code: 400,
+            message: balance_error.to_string(),
+        }),
     }
 }
 
@@ -77,12 +89,17 @@ async fn withdraw_balance(
         .await
         .unwrap();
     match result {
-        Ok(_) => HttpResponse::Ok().body(format!(
-            "Balance withdrawn with id: {:?}, amount: {:?}",
-            request.id, request.amount
-        )),
-        Err(balance_error) => HttpResponse::BadRequest()
-            .body(format!("Error withdrawing balance: {:?}", balance_error)),
+        Ok(_) => HttpResponse::Ok().json(SuccessResponse {
+            code: 200,
+            data: format!(
+                "Balance withdrawn with id: {:?}, amount: {:?}",
+                request.id, request.amount
+            ),
+        }),
+        Err(balance_error) => HttpResponse::BadRequest().json(ErrorResponse {
+            code: 400,
+            message: balance_error.to_string(),
+        }),
     }
 }
 
@@ -101,12 +118,17 @@ async fn transfer_balance(
         .await
         .unwrap();
     match result {
-        Ok(_) => HttpResponse::Ok().body(format!(
-            "Balance transferred with from_id: {:?}, to_id: {:?}, amount: {:?}",
-            request.from_id, request.to_id, request.amount
-        )),
-        Err(balance_error) => HttpResponse::BadRequest()
-            .body(format!("Error transferring balance: {:?}", balance_error)),
+        Ok(_) => HttpResponse::Ok().json(SuccessResponse {
+            code: 200,
+            data: format!(
+                "Balance transferred from {:?} to {:?} with amount: {:?}",
+                request.from_id, request.to_id, request.amount
+            ),
+        }),
+        Err(balance_error) => HttpResponse::BadRequest().json(ErrorResponse {
+            code: 400,
+            message: balance_error.to_string(),
+        }),
     }
 }
 
