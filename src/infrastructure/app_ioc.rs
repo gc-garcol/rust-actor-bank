@@ -3,7 +3,7 @@ use rust_rocksdb::{DBWithThreadMode, SingleThreaded};
 use std::sync::Arc;
 
 use crate::{
-    application::balance::api::balance_api::BalanceApi,
+    application::balance::api::{balance_api::BalanceApi, balance_event_api::BalanceEventApi},
     infrastructure::{
         balance::{
             balance_config::new_db_single_threaded_mode,
@@ -16,6 +16,7 @@ use crate::{
 #[derive(Clone)]
 pub struct AppState {
     pub balance_api_addr: Arc<Addr<BalanceApi>>,
+    pub balance_event_api: Arc<BalanceEventApi>,
 }
 
 impl Default for AppState {
@@ -35,11 +36,15 @@ impl AppState {
             balance_event_repository.clone(),
             balance_repository.clone(),
         );
+        let balance_event_api = BalanceEventApi {
+            balance_event_repository: balance_event_repository.clone(),
+        };
 
         let balance_api_addr = balance_api.start();
 
         Self {
             balance_api_addr: Arc::new(balance_api_addr),
+            balance_event_api: Arc::new(balance_event_api),
         }
     }
 }

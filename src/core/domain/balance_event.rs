@@ -1,10 +1,11 @@
 use bincode::{Decode, Encode, config};
+use serde::{Deserialize, Serialize};
 
 use crate::core::domain::balance::{BalanceAmount, BalanceId};
 
 pub type EventId = u64;
 
-#[derive(Debug, Encode, Decode)]
+#[derive(Debug, Encode, Decode, Clone, Serialize, Deserialize)]
 pub enum BalanceEventType {
     BalanceCreated,
     BalanceDeposited,
@@ -19,7 +20,7 @@ pub struct BalanceEvent {
     pub data: Vec<u8>,
 }
 
-#[derive(Debug, Encode, Decode)]
+#[derive(Debug, Encode, Decode, Serialize)]
 pub struct BalanceCreatedEvent {
     pub id: BalanceId,
 }
@@ -30,7 +31,7 @@ impl BalanceCreatedEvent {
     }
 }
 
-#[derive(Debug, Encode, Decode)]
+#[derive(Debug, Encode, Decode, Serialize)]
 pub struct BalanceDepositedEvent {
     pub id: BalanceId,
     pub amount: BalanceAmount,
@@ -42,7 +43,7 @@ impl BalanceDepositedEvent {
     }
 }
 
-#[derive(Debug, Encode, Decode)]
+#[derive(Debug, Encode, Decode, Serialize)]
 pub struct BalanceWithdrawnEvent {
     pub id: BalanceId,
     pub amount: BalanceAmount,
@@ -54,7 +55,7 @@ impl BalanceWithdrawnEvent {
     }
 }
 
-#[derive(Debug, Encode, Decode)]
+#[derive(Debug, Encode, Decode, Serialize)]
 pub struct BalanceTransferredEvent {
     pub from_id: BalanceId,
     pub to_id: BalanceId,

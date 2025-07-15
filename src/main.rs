@@ -7,6 +7,7 @@ use infrastructure::app_ioc::AppState;
 use transport::rest::balance_resource;
 
 use crate::infrastructure::server_config::{ServerConfig, initialize_logging};
+use crate::transport::rest::balance_event_resource;
 
 pub mod application;
 pub mod core;
@@ -25,6 +26,7 @@ async fn main() -> Result<Void> {
         App::new()
             .app_data(web::Data::new(app_state.clone()))
             .configure(balance_resource::config)
+            .configure(balance_event_resource::config)
             .wrap(middleware::Compress::default())
     })
     .bind((config.host, config.port))?

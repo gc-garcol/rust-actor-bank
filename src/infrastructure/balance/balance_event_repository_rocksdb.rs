@@ -1,7 +1,7 @@
 use std::{rc::Rc, sync::Arc};
 
 use bincode::config;
-use log::info;
+use log::debug;
 use rust_rocksdb::{DBWithThreadMode, SingleThreaded};
 
 use crate::{
@@ -33,12 +33,7 @@ impl BalanceEventRepository for BalanceEventRepositoryRocksdb {
         event_byte: Vec<u8>,
         transaction_context: Rc<dyn TransactionContext>,
     ) -> EventId {
-        let last_event_id = self
-            .db
-            .get_cf(self.db.cf_handle(EVENTS_CF).unwrap(), LAST_EVENT_ID)
-            .unwrap()
-            .unwrap_or(0_u64.to_be_bytes().to_vec());
-        let event_id = u64::from_be_bytes(last_event_id.try_into().unwrap()) + 1;
+        let event_id = self.last_event_id() + 1;
 
         let balance_event = BalanceEvent {
             id: event_id,
@@ -54,8 +49,41 @@ impl BalanceEventRepository for BalanceEventRepositoryRocksdb {
         batch.put_cf(cf, id_bytes, event_bytes);
         batch.put_cf(cf, LAST_EVENT_ID, event_id.to_be_bytes());
 
-        info!("Saving event in transaction: {:?}", balance_event);
+        debug!("Saving event in transaction: {:?}", balance_event);
 
         event_id
+    }
+
+    fn read(&self, offset: u64, limit: u64) -> Vec<BalanceEvent> {
+        let last_event_id = self.last_event_id();
+        let to_offset = (offset + limit).min(last_event_id);
+
+        let cf: &rust_rocksdb::ColumnFamily = self.db.cf_handle(EVENTS_CF).unwrap();
+        let keys: Vec<_> = (offset..to_offset).map(|key| key.to_be_bytes()).collect();
+        let cf_keys = keys.iter().map(|key| (cf, key));
+
+        let results = self.db.multi_get_cf(cf_keys);
+
+        results
+            .into_iter()
+            .filter_map(|result| {
+                result.ok()?.and_then(|bytes| {
+                    bincode::decode_from_slice(&bytes, config::standard())
+                        .ok()
+                        .map(|(balance_event, _)| balance_event)
+                })
+            })
+            .collect()
+    }
+}
+
+impl BalanceEventRepositoryRocksdb {
+    fn last_event_id(&self) -> u64 {
+        let last_event_id: Vec<u8> = self
+            .db
+            .get_cf(self.db.cf_handle(EVENTS_CF).unwrap(), LAST_EVENT_ID)
+            .unwrap()
+            .unwrap_or(0_u64.to_be_bytes().to_vec());
+        u64::from_be_bytes(last_event_id.try_into().unwrap())
     }
 }
