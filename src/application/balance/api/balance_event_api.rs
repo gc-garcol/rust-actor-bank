@@ -38,33 +38,24 @@ impl BalanceEventApi {
     fn string_event(&self, event_type: BalanceEventType, data: Vec<u8>) -> String {
         match event_type {
             BalanceEventType::BalanceCreated => {
-                let event: BalanceCreatedEvent =
-                    bincode::decode_from_slice(&data, config::standard())
-                        .unwrap()
-                        .0;
-                serde_json::to_string(&event).unwrap()
+                self.decode_and_serialize::<BalanceCreatedEvent>(&data)
             }
             BalanceEventType::BalanceDeposited => {
-                let event: BalanceDepositedEvent =
-                    bincode::decode_from_slice(&data, config::standard())
-                        .unwrap()
-                        .0;
-                serde_json::to_string(&event).unwrap()
+                self.decode_and_serialize::<BalanceDepositedEvent>(&data)
             }
             BalanceEventType::BalanceWithdrawn => {
-                let event: BalanceWithdrawnEvent =
-                    bincode::decode_from_slice(&data, config::standard())
-                        .unwrap()
-                        .0;
-                serde_json::to_string(&event).unwrap()
+                self.decode_and_serialize::<BalanceWithdrawnEvent>(&data)
             }
             BalanceEventType::BalanceTransferred => {
-                let event: BalanceTransferredEvent =
-                    bincode::decode_from_slice(&data, config::standard())
-                        .unwrap()
-                        .0;
-                serde_json::to_string(&event).unwrap()
+                self.decode_and_serialize::<BalanceTransferredEvent>(&data)
             }
         }
+    }
+
+    fn decode_and_serialize<T: serde::Serialize + bincode::Decode<()>>(&self, data: &[u8]) -> String {
+        let event: T = bincode::decode_from_slice(data, config::standard())
+            .unwrap()
+            .0;
+        serde_json::to_string(&event).unwrap()
     }
 }
