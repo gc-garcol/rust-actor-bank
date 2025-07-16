@@ -11,12 +11,12 @@ use crate::{
     },
     infrastructure::app_ioc::AppState,
     transport::{
-        error_response::ErrorResponse,
+        common_response::ErrorResponse,
         rest::balance_payload::{
             CreateBalanceRequest, DepositBalanceRequest, TransferBalanceRequest,
             WithdrawBalanceRequest,
         },
-        success_response::SuccessResponse,
+        common_response::SuccessResponse,
     },
 };
 
