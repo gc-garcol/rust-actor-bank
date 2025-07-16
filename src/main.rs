@@ -4,8 +4,10 @@ use core::common::types::Result;
 use core::common::types::Void;
 use dotenv::dotenv;
 use infrastructure::app_ioc::AppState;
+use std::sync::Arc;
 use transport::rest::balance_resource;
 
+use crate::infrastructure::scheduler::scheduler::schedule;
 use crate::infrastructure::server_config::{ServerConfig, initialize_logging};
 use crate::transport::rest::balance_event_resource;
 
@@ -21,6 +23,8 @@ async fn main() -> Result<Void> {
     initialize_logging(&config.log_config_path)?;
 
     let app_state = AppState::new();
+
+    tokio::spawn(schedule(Arc::new(app_state.clone())));
 
     HttpServer::new(move || {
         App::new()
