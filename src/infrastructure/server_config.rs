@@ -1,10 +1,11 @@
-use std::env;
+use std::{env, thread};
 
 #[derive(Debug, Clone)]
 pub struct ServerConfig {
     pub host: String,
     pub port: u16,
     pub log_config_path: String,
+    pub worker_size: usize,
 }
 
 impl Default for ServerConfig {
@@ -13,6 +14,7 @@ impl Default for ServerConfig {
             host: "0.0.0.0".to_string(),
             port: 8080,
             log_config_path: "log4rs.yaml".to_string(),
+            worker_size: thread::available_parallelism().unwrap().get(),
         }
     }
 }
@@ -27,10 +29,18 @@ impl ServerConfig {
         let host = env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
         let log_config_path = env::var("LOG4RS_CONFIG_PATH").unwrap_or("log4rs.yaml".to_string());
 
+        let cpu_size = thread::available_parallelism().unwrap().get();
+        let worker_size = env::var("WORKER_SIZE")
+            .unwrap_or_else(|_| cpu_size.to_string())
+            .parse::<usize>()
+            .unwrap_or(cpu_size)
+            .min(cpu_size);
+
         Self {
             host,
             port,
             log_config_path,
+            worker_size,
         }
     }
 }

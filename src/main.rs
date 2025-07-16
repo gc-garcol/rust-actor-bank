@@ -33,6 +33,7 @@ async fn main() -> Result<Void> {
             .configure(balance_event_resource::config)
             .wrap(middleware::Compress::default())
     })
+    .workers(config.worker_size)
     .bind((config.host, config.port))?
     .run()
     .await?;
