@@ -1,7 +1,8 @@
 use std::{env, sync::Arc, time::Duration};
 
 use rdkafka::{
-    ClientConfig, producer::{FutureProducer, FutureRecord},
+    ClientConfig,
+    producer::{FutureProducer, FutureRecord},
 };
 use rust_rocksdb::{DB, DBWithThreadMode, Options, SingleThreaded};
 
@@ -22,11 +23,11 @@ impl BalanceEventEmitterConfig {
     pub fn new() -> Self {
         Self {
             brokers: env::var("KAFKA_BROKERS").unwrap_or("localhost:9092".to_string()),
-            topic: env::var("BALANCE_EVENT_TOPIC").unwrap_or("balance_event".to_string()),
+            topic: env::var("BALANCE_EVENT_TOPIC").unwrap_or("balance.event".to_string()),
             pooling_size: env::var("BALANCE_EVENT_EMITTER_JOB_POOLING_SIZE")
-                .unwrap_or("10".to_string())
+                .unwrap_or("1000".to_string())
                 .parse::<u64>()
-                .unwrap_or(10),
+                .unwrap_or(1000),
         }
     }
 }

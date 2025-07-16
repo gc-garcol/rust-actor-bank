@@ -58,7 +58,7 @@ impl BalanceEventRepository for BalanceEventRepositoryRocksdb {
 
     fn read(&self, offset: u64, limit: u64) -> Vec<BalanceEvent> {
         let last_event_id = self.last_event_id();
-        let to_offset = (offset + limit).min(last_event_id);
+        let to_offset = (offset + limit - 1).min(last_event_id);
 
         let cf: &rust_rocksdb::ColumnFamily = self.db.cf_handle(EVENTS_CF).unwrap();
         let keys: Vec<_> = (offset..=to_offset).map(|key| key.to_be_bytes()).collect();
