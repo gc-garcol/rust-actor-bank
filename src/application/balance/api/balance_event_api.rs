@@ -54,7 +54,10 @@ impl BalanceEventApi {
         }
     }
 
-    fn decode_and_serialize<T: serde::Serialize + bincode::Decode<()>>(&self, data: &[u8]) -> String {
+    fn decode_and_serialize<T: serde::Serialize + bincode::Decode<()>>(
+        &self,
+        data: &[u8],
+    ) -> String {
         let event: T = bincode::decode_from_slice(data, config::standard())
             .unwrap()
             .0;
