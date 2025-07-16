@@ -1,5 +1,6 @@
 use std::{env, sync::Arc, time::Duration};
 
+use log::error;
 use rdkafka::{
     ClientConfig,
     producer::{FutureProducer, FutureRecord},
@@ -17,6 +18,8 @@ struct BalanceEventEmitterConfig {
     pub brokers: String,
     pub topic: String,
     pub pooling_size: u64,
+    pub batch_size: String,
+    pub linger_ms: String,
 }
 
 impl BalanceEventEmitterConfig {
@@ -28,6 +31,9 @@ impl BalanceEventEmitterConfig {
                 .unwrap_or("1000".to_string())
                 .parse::<u64>()
                 .unwrap_or(1000),
+            batch_size: env::var("KAFKA_BALANCE_EVENT_BATCH_NUM_MESSAGES")
+                .unwrap_or("10000".to_string()),
+            linger_ms: env::var("KAFKA_BALANCE_EVENT_LINGER_MS").unwrap_or("50".to_string()),
         }
     }
 }
@@ -72,6 +78,11 @@ impl BalanceEventEmitterJob {
 
         let producer = ClientConfig::new()
             .set("bootstrap.servers", &config.brokers)
+            // .set("queue.buffering.max.messages", "1000000")
+            // .set("batch.num.messages", &config.batch_size)
+            // .set("linger.ms", &config.linger_ms)
+            .set("compression.type", "lz4")
+            .set("acks", "1")
             .create()
             .expect("Producer creation error");
 
@@ -99,7 +110,11 @@ impl BalanceEventEmitterJob {
                 .key(&key)
                 .payload(&payload);
 
-            let _ = self.producer.send(record, Duration::from_secs(1)).await;
+            let result = self.producer.send(record, Duration::from_secs(1)).await;
+            if result.is_err() {
+                error!("Failed to send event: {:?}", result.err());
+                break;
+            }
             self.offset_db.set_offset(event.id);
         }
     }
