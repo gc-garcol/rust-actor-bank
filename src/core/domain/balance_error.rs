@@ -18,17 +18,16 @@ impl fmt::Display for BalanceError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             BalanceError::BalanceAlreadyExists(id) => {
-                write!(f, "Balance with id {} already exists", id)
+                write!(f, "Balance with id {id} already exists")
             }
-            BalanceError::BalanceNotFound(id) => write!(f, "Balance with id {} not found", id),
+            BalanceError::BalanceNotFound(id) => write!(f, "Balance with id {id} not found"),
             BalanceError::InsufficientFunds { balance, amount } => {
                 write!(
                     f,
-                    "Insufficient funds for withdrawal. Balance: {}, Requested: {}",
-                    balance, amount
+                    "Insufficient funds for withdrawal. Balance: {balance}, Requested: {amount}"
                 )
             }
-            BalanceError::UnknownError(message) => write!(f, "Unknown error: {}", message),
+            BalanceError::UnknownError(message) => write!(f, "Unknown error: {message}"),
         }
     }
 }

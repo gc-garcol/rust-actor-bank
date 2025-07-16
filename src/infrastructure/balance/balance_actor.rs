@@ -1,5 +1,3 @@
-use std::panic::{self, AssertUnwindSafe};
-
 use actix::{Actor, Context, Handler, Message};
 use log::info;
 

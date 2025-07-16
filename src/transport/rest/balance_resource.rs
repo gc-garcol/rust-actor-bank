@@ -26,7 +26,7 @@ async fn get_balance(ioc: web::Data<AppState>, query: web::Query<BalanceQuery>) 
     match result {
         Ok(balance) => HttpResponse::Ok().json(balance),
         Err(balance_error) => {
-            HttpResponse::BadRequest().body(format!("Error getting balance: {}", balance_error))
+            HttpResponse::BadRequest().body(format!("Error getting balance: {balance_error}"))
         }
     }
 }
@@ -44,7 +44,7 @@ async fn create_balance(
     match result {
         Ok(balance_id) => HttpResponse::Ok().json(SuccessResponse {
             code: 200,
-            data: format!("Balance created with id: {:?}", balance_id),
+            data: format!("Balance created with id: {balance_id:?}"),
         }),
         Err(balance_error) => HttpResponse::BadRequest().json(ErrorResponse {
             code: 400,

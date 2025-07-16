@@ -51,7 +51,7 @@ impl BalanceEventRepository for BalanceEventRepositoryRocksdb {
         batch.put_cf(cf, id_bytes, event_bytes);
         batch.put_cf(cf, LAST_EVENT_ID, event_id.to_be_bytes());
 
-        debug!("Saving event in transaction: {:?}", balance_event);
+        debug!("Saving event in transaction: {balance_event:?}");
 
         event_id
     }

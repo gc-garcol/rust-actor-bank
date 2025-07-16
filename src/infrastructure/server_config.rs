@@ -36,11 +36,7 @@ impl ServerConfig {
 }
 
 pub fn initialize_logging(config_path: &str) -> Result<(), std::io::Error> {
-    log4rs::init_file(config_path, Default::default()).map_err(|e| {
-        std::io::Error::new(
-            std::io::ErrorKind::Other,
-            format!("Failed to initialize logging: {}", e),
-        )
-    })?;
+    log4rs::init_file(config_path, Default::default())
+        .map_err(|e| std::io::Error::other(format!("Failed to initialize logging: {e}")))?;
     Ok(())
 }
