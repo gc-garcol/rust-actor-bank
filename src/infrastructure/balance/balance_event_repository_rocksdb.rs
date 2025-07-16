@@ -1,6 +1,7 @@
 use std::{rc::Rc, sync::Arc};
 
 use bincode::config;
+use chrono::Utc;
 use log::debug;
 use rust_rocksdb::{DBWithThreadMode, SingleThreaded};
 
@@ -39,6 +40,7 @@ impl BalanceEventRepository for BalanceEventRepositoryRocksdb {
             id: event_id,
             event_type,
             data: event_byte,
+            event_time: Utc::now().timestamp_nanos_opt().unwrap() as u64,
         };
 
         let txn_context = Rc::downcast::<RocksdbTransactionContext>(transaction_context).unwrap();
@@ -59,7 +61,7 @@ impl BalanceEventRepository for BalanceEventRepositoryRocksdb {
         let to_offset = (offset + limit).min(last_event_id);
 
         let cf: &rust_rocksdb::ColumnFamily = self.db.cf_handle(EVENTS_CF).unwrap();
-        let keys: Vec<_> = (offset..to_offset).map(|key| key.to_be_bytes()).collect();
+        let keys: Vec<_> = (offset..=to_offset).map(|key| key.to_be_bytes()).collect();
         let cf_keys = keys.iter().map(|key| (cf, key));
 
         let results = self.db.multi_get_cf(cf_keys);

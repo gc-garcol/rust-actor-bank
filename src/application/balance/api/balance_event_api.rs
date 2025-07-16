@@ -15,6 +15,7 @@ use crate::{
 pub struct BalanceEventData {
     pub id: EventId,
     pub event_type: BalanceEventType,
+    pub event_time: u64,
     pub data: String,
 }
 
@@ -30,6 +31,7 @@ impl BalanceEventApi {
             .map(|event| BalanceEventData {
                 id: event.id,
                 event_type: event.event_type.clone(),
+                event_time: event.event_time,
                 data: self.string_event(event.event_type.clone(), event.data),
             })
             .collect()

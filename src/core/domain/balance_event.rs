@@ -17,6 +17,7 @@ pub enum BalanceEventType {
 pub struct BalanceEvent {
     pub id: EventId,
     pub event_type: BalanceEventType,
+    pub event_time: u64,
     pub data: Vec<u8>,
 }
 
