@@ -2,6 +2,10 @@
 
 A high-performance bank account management system built with Rust, leveraging the Actor model for concurrent transaction processing and RocksDB for durable storage.
 
+## Benchmark
+
+![transfer](./docs/transfer.png)
+
 ## Prerequisite
 
 - `rustc 1.88.0` or later
@@ -43,10 +47,6 @@ src/
     └── rest/             # REST
     └── ws/               # WS
 ```
-
-## Benchmark
-
-![transfer](./docs/transfer.png)
 
 ## Development
 
