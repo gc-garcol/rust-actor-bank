@@ -4,7 +4,7 @@ A high-performance bank account management system built with Rust, leveraging th
 
 ## Benchmark
 
-![transfer](./docs/transfer.png)
+![transfer](./docs/transfers.png)
 
 ## Prerequisite
 
